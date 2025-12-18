@@ -1,5 +1,5 @@
 blueprint:
-  name: Solakon ONE Nulleinspeisung (DE) - Dynamisch & SOC-Gesteuert (V204-mk)
+  name: Solakon ONE Nulleinspeisung (DE) - Dynamisch & SOC-Gesteuert (V204.1-mk)
   description: |
     **Detaillierte Funktionsbeschreibung: Dynamische Nulleinspeisung mit SOC-Zonenlogik**
 
@@ -369,24 +369,6 @@ variables:
     {{ states(solakon_mode) in [mode_value_discharge_en, mode_value_discharge_de] }}
   mode_is_disabled: >
     {{ states(solakon_mode) in [mode_value_disabled_en, mode_value_disabled_de] }}
-  mode_option_discharge: >
-    {% set options = state_attr(solakon_mode, 'options') or [] %}
-    {% if mode_value_discharge_en in options %}
-      {{ mode_value_discharge_en }}
-    {% elif mode_value_discharge_de in options %}
-      {{ mode_value_discharge_de }}
-    {% else %}
-      {{ mode_value_discharge_en }}
-    {% endif %}
-  mode_option_disabled: >
-    {% set options = state_attr(solakon_mode, 'options') or [] %}
-    {% if mode_value_disabled_en in options %}
-      {{ mode_value_disabled_en }}
-    {% elif mode_value_disabled_de in options %}
-      {{ mode_value_disabled_de }}
-    {% else %}
-      {{ mode_value_disabled_en }}
-    {% endif %}
 
 trigger:
   # -------------------------------------------------------------------------------------------------
@@ -504,7 +486,15 @@ action:
                       - service: select.select_option
                         data:
                           entity_id: !input mode_select
-                          option: "{{ mode_option_discharge }}"
+                          option: >
+                            {% set options = state_attr(solakon_mode, 'options') or [] %}
+                            {% if mode_value_discharge_en in options %}
+                              {{ mode_value_discharge_en }}
+                            {% elif mode_value_discharge_de in options %}
+                              {{ mode_value_discharge_de }}
+                            {% else %}
+                              {{ mode_value_discharge_en }}
+                            {% endif %}
           
           # FALL B: ZONE 3 - Sicherheits-STOPP (SOC <= Untere Schwelle UND Zyklus ON)
           - conditions:
@@ -537,7 +527,15 @@ action:
                       - service: select.select_option
                         data:
                           entity_id: !input mode_select
-                          option: "{{ mode_option_disabled }}"
+                          option: >
+                            {% set options = state_attr(solakon_mode, 'options') or [] %}
+                            {% if mode_value_disabled_en in options %}
+                              {{ mode_value_disabled_en }}
+                            {% elif mode_value_disabled_de in options %}
+                              {{ mode_value_disabled_de }}
+                            {% else %}
+                              {{ mode_value_disabled_en }}
+                            {% endif %}
               # 3. Power Limit auf 0 W setzen (Soft Stopp)
               - service: number.set_value
                 data:
@@ -561,7 +559,15 @@ action:
                       - service: select.select_option
                         data:
                           entity_id: !input mode_select
-                          option: "{{ mode_option_disabled }}"
+                          option: >
+                            {% set options = state_attr(solakon_mode, 'options') or [] %}
+                            {% if mode_value_disabled_en in options %}
+                              {{ mode_value_disabled_en }}
+                            {% elif mode_value_disabled_de in options %}
+                              {{ mode_value_disabled_de }}
+                            {% else %}
+                              {{ mode_value_disabled_en }}
+                            {% endif %}
               # Power Limit auf 0 W setzen
               - service: number.set_value
                 data:
@@ -610,7 +616,15 @@ action:
                       - service: select.select_option
                         data:
                           entity_id: !input mode_select
-                          option: "{{ mode_option_discharge }}"
+                          option: >
+                            {% set options = state_attr(solakon_mode, 'options') or [] %}
+                            {% if mode_value_discharge_en in options %}
+                              {{ mode_value_discharge_en }}
+                            {% elif mode_value_discharge_de in options %}
+                              {{ mode_value_discharge_de }}
+                            {% else %}
+                              {{ mode_value_discharge_en }}
+                            {% endif %}
           
           - conditions:
               # Nachtabschaltung aktiviert
@@ -642,7 +656,15 @@ action:
               - service: select.select_option
                 data:
                   entity_id: !input mode_select
-                  option: "{{ mode_option_disabled }}"
+                  option: >
+                    {% set options = state_attr(solakon_mode, 'options') or [] %}
+                    {% if mode_value_disabled_en in options %}
+                      {{ mode_value_disabled_en }}
+                    {% elif mode_value_disabled_de in options %}
+                      {{ mode_value_disabled_de }}
+                    {% else %}
+                      {{ mode_value_disabled_en }}
+                    {% endif %}
               # Power Limit auf 0 W
               - service: number.set_value
                 data:
