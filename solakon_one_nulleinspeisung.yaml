@@ -1,5 +1,5 @@
 blueprint:
-  name: Solakon ONE Nulleinspeisung (DE) - Dynamisch & SOC-Gesteuert (V207)
+  name: Solakon ONE Nulleinspeisung (DE) - Dynamisch & SOC-Gesteuert (V207.1mk)
   description: |
     ### Dynamische Nulleinspeisung mit SOC-Zonenlogik
       Dieser Home Assistant Blueprint implementiert eine dynamische Nulleinspeisung für den Solakon ONE Wechselrichter.
@@ -356,7 +356,16 @@ blueprint:
         name: "🔒 SICHERHEITS-PARAMETER:"
         description: "Hier findest du den Parameter für die max Ausgangsleistung."
         collapsed: true 
-        input:     
+        input:
+          disable_zero_feed_in_at_100_soc:
+            name: ⚡ Disable zero feed-in at 100% SoC
+            description: |
+              Wenn aktiviert, wird bei 100% Batterieladung die Nulleinspeisung deaktiviert und die maximale Leistung erzeugt.
+              Speist alles Überschüssige ins Netz ein.
+            default: false
+            selector:
+              boolean:
+              
           max_active_power_limit:
             name: 🔒 Maximale Ausgangsleistung (Hard Limit)
             description: |
@@ -414,6 +423,7 @@ variables:
   
   # Aktuelle Sensorwerte für Conditions
   soc: !input soc_sensor
+  disable_zero_feed_in_at_100_soc: !input disable_zero_feed_in_at_100_soc
   timeout_countdown: !input remote_timeout_countdown_sensor
   solakon_mode: !input mode_select
   cycle_active: !input cycle_active_input_select
@@ -459,6 +469,11 @@ triggers:
     below: !input soc_conservation_limit
     id: soc_low
 
+  - trigger: numeric_state
+    entity_id: !input soc_sensor
+    equals: 100
+    id: soc_full
+
   # -------------------------------------------------------------------------------------------------
   # 3. Modus-Wechsel (Reagiert auf manuelle/externe Änderung)
   # -------------------------------------------------------------------------------------------------
@@ -467,6 +482,30 @@ triggers:
     id: mode_change
 
 actions:
+  # -------------------------------------------------------------------------------------------------
+  # NEU: Volle Leistung bei 100% SOC
+  # -------------------------------------------------------------------------------------------------
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ states(soc) | float(0) == 100 }}"
+          - condition: template
+            value_template: "{{ disable_zero_feed_in_at_100_soc }}"
+        sequence:
+          - action: logbook.log
+            data:
+              name: Solakon
+              message: "⚡ Nulleinspeisung deaktiviert bei 100% SOC."
+          - action: number.set_value
+            data:
+              entity_id: !input max_discharge_current_number
+              value: !input default_discharge_current
+          - action: number.set_value
+            data:
+              entity_id: !input active_power_number
+              value: !input max_active_power_limit
+          - stop: "Nulleinspeisung deaktiviert bei 100% SOC"
+  
   # -------------------------------------------------------------------------------------------------
   # PRÜFUNG: Check auf kritische Fehler (Werte und Entitäten)
   # -------------------------------------------------------------------------------------------------

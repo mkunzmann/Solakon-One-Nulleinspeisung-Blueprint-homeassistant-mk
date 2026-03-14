@@ -4,7 +4,13 @@
 
         VAL{{"🛡️ Validierung SOC-Limits & Entitäten"}}
         VAL -- Fehler --> STOP([🛑 Stop + Log-Eintrag])
-        VAL -- OK --> ZONE_CHECK
+        VAL -- OK --> FULL_POWER_CHECK
+
+        FULL_POWER_CHECK{{"⚡ Nulleinspeisung deaktivieren?"}}
+        FULL_POWER_CHECK -- Ja --> FULL_POWER_ACTION["🔋 Nulleinspeisung deaktiviert   Output → Max. Power   Entladung → 40A"]
+        FULL_POWER_CHECK -- Nein --> ZONE_CHECK
+        
+        FULL_POWER_ACTION --> END_STOP([Ende])
 
         ZONE_CHECK{{"SOC & Zyklus-Status?"}}
 

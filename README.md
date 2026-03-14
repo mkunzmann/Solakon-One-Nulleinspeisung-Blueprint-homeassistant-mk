@@ -133,6 +133,19 @@ Falls der Modus des Wechselrichters extern zurückgesetzt wird (z.B. durch einen
 
 ---
 
+### ⚡ Nulleinspeisung deaktivieren (Optional)
+
+Diese optionale Funktion ermöglicht es, die Nulleinspeisung zu umgehen und die **maximale verfügbare PV-Leistung** zu nutzen, sobald der Batteriespeicher **100% SOC** erreicht hat.
+
+* **Aktivierung:** Über den Parameter "Nulleinspeisung deaktivieren"
+* **Verhalten:**
+  - Bei 100% SOC wird die Ausgangsleistung auf den Wert von `Maximale Ausgangsleistung (Hard Limit)` gesetzt.
+  - Der PI-Regler wird für diesen Zustand umgangen.
+  - Dies ist nützlich, um an sonnigen Tagen bei voller Batterie den maximalen Überschuss ins Netz einzuspeisen.
+* **Deaktivierung:** Sobald der SOC unter 100% fällt, wird die normale PI-Regelung wieder aktiv.
+
+---
+
 ### 4. 🌙 Nachtabschaltung (Optional)
 
 Die Nachtabschaltung kann optional aktiviert werden und betrifft **nur Zone 2**:
@@ -273,6 +286,7 @@ Dafür steht ein eigener Blueprint zur Verfügung:
 
 | Parameter | Standard | Min | Max | Beschreibung |
 |:----------|:---------|:----|:----|:-------------|
+| **Nulleinspeisung deaktivieren** | `false` | - | - | Deaktiviert die Nulleinspeisung bei 100% SOC. |
 | **Max. Ausgangsleistung** | 800 W | 0 | 1200 W | Absolute Obergrenze (Hard Limit) in Zone 0 und Zone 1. |
 
 ---
